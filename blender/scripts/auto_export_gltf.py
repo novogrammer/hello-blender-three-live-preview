@@ -31,6 +31,7 @@ def auto_export(_):
         filepath=str(export_path),
         export_format='GLB',
         use_active_collection=True,
+        export_apply=True,
     )
 
     print("exported collection")
