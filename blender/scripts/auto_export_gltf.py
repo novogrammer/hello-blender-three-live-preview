@@ -25,6 +25,15 @@ COPY_DATA_OBJECT_TYPES = {
 }
 
 
+def get_export_name(obj):
+    export_name = obj.get("glb_name")
+    if isinstance(export_name, str):
+        export_name = export_name.strip()
+        if export_name:
+            return export_name
+    return obj.name
+
+
 def find_layer_collection(layer_collection, name):
     if layer_collection.collection.name == name:
         return layer_collection
@@ -57,8 +66,11 @@ def duplicate_collection_objects(source_collection, target_collection):
 
     for obj in source_collection.all_objects:
         duplicate = obj.copy()
+        export_name = get_export_name(obj)
+        duplicate.name = export_name
         if obj.data and obj.type in COPY_DATA_OBJECT_TYPES:
             duplicate.data = obj.data.copy()
+            duplicate.data.name = f"{export_name}__mesh"
         target_collection.objects.link(duplicate)
         object_map[obj] = duplicate
 
