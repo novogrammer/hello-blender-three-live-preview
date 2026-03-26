@@ -31,12 +31,20 @@ directionalLight.position.set(4, 6, 8)
 scene.add(directionalLight)
 
 const loader = new GLTFLoader()
+const clock = new THREE.Clock()
+let mixer: THREE.AnimationMixer | null = null
 
 loader.load(
   '/models/scene.glb',
   (gltf) => {
     const model = gltf.scene
     scene.add(model)
+
+    if (gltf.animations.length > 0) {
+      mixer = new THREE.AnimationMixer(model)
+      const action = mixer.clipAction(gltf.animations[0])
+      action.play()
+    }
 
     const box = new THREE.Box3().setFromObject(model)
     const size = box.getSize(new THREE.Vector3())
@@ -55,11 +63,9 @@ loader.load(
   },
 )
 
-const clock = new THREE.Clock()
-
 function render() {
-  const elapsedTime = clock.getElapsedTime()
-  scene.rotation.y = elapsedTime * 0.2
+  const delta = clock.getDelta()
+  mixer?.update(delta)
   renderer.render(scene, camera)
   requestAnimationFrame(render)
 }
