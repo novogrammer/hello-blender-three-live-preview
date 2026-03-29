@@ -30,15 +30,6 @@ def find_collection_in_tree(root_collection, name):
     return None
 
 
-def get_export_name(obj):
-    export_name = obj.get("glb_name")
-    if isinstance(export_name, str):
-        export_name = export_name.strip()
-        if export_name:
-            return export_name
-    return obj.name
-
-
 def get_export_collection(source_scene):
     source_collection = find_collection_in_tree(
         source_scene.collection,
@@ -51,35 +42,8 @@ def get_export_collection(source_scene):
     return source_collection
 
 
-def iter_export_objects(collection):
-    yielded = set()
-    for obj in collection.all_objects:
-        if obj.name_full in yielded:
-            continue
-        yielded.add(obj.name_full)
-        yield obj
-
-
-def capture_object_names(collection):
-    return [(obj, obj.name) for obj in iter_export_objects(collection)]
-
-
-def rename_objects_for_export(collection):
-    states = capture_object_names(collection)
-    for obj, _ in states:
-        obj.name = get_export_name(obj)
-    return states
-
-
-def restore_object_names(states):
-    for obj, name in states:
-        if obj.name != name:
-            obj.name = name
-
-
 def rebuild_and_export(context):
     export_collection = get_export_collection(context.scene)
-    name_states = rename_objects_for_export(export_collection)
     previous_mode = bpy.context.mode
     previous_mode_set = MODE_SET_BY_CONTEXT_MODE.get(previous_mode, "OBJECT")
 
@@ -97,7 +61,6 @@ def rebuild_and_export(context):
             export_apply=True,
         )
     finally:
-        restore_object_names(name_states)
         if previous_mode != 'OBJECT':
             bpy.ops.object.mode_set(mode=previous_mode_set)
 
