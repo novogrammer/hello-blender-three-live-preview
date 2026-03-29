@@ -22,6 +22,22 @@ COPY_DATA_OBJECT_TYPES = {
     "META",
     "SURFACE",
 }
+MODE_SET_BY_CONTEXT_MODE = {
+    "EDIT_CURVE": "EDIT",
+    "EDIT_MESH": "EDIT",
+    "EDIT_SURFACE": "EDIT",
+    "EDIT_TEXT": "EDIT",
+    "EDIT_ARMATURE": "EDIT",
+    "EDIT_METABALL": "EDIT",
+    "EDIT_LATTICE": "EDIT",
+    "POSE": "POSE",
+    "SCULPT": "SCULPT",
+    "PAINT_WEIGHT": "WEIGHT_PAINT",
+    "PAINT_VERTEX": "VERTEX_PAINT",
+    "PAINT_TEXTURE": "TEXTURE_PAINT",
+    "PARTICLE": "PARTICLE_EDIT",
+    "OBJECT": "OBJECT",
+}
 
 
 def get_export_name(obj):
@@ -90,6 +106,11 @@ def apply_selected_modifiers(objects):
     view_layer = bpy.context.view_layer
     previous_active = view_layer.objects.active
     previously_selected = list(bpy.context.selected_objects)
+    previous_mode = bpy.context.mode
+    previous_mode_set = MODE_SET_BY_CONTEXT_MODE.get(previous_mode, "OBJECT")
+
+    if previous_mode != 'OBJECT':
+        bpy.ops.object.mode_set(mode='OBJECT')
 
     bpy.ops.object.select_all(action='DESELECT')
 
@@ -108,9 +129,14 @@ def apply_selected_modifiers(objects):
                 obj.select_set(False)
     finally:
         view_layer.objects.active = previous_active
+        bpy.ops.object.select_all(action='DESELECT')
         for obj in previously_selected:
             if obj.name in bpy.data.objects:
                 obj.select_set(True)
+        if previous_active and previous_active.name in bpy.data.objects:
+            view_layer.objects.active = previous_active
+        if previous_mode != 'OBJECT':
+            bpy.ops.object.mode_set(mode=previous_mode_set)
 
 
 def rebuild_export_collection():
