@@ -1,5 +1,4 @@
 import bpy
-from bpy.app.handlers import persistent
 from pathlib import Path
 
 MODELING_COLLECTION_NAME = "Modeling"
@@ -126,8 +125,7 @@ def rebuild_export_collection():
     return export_collection
 
 
-@persistent
-def auto_export(_):
+def auto_export():
     if not bpy.data.filepath:
         return
 
@@ -149,10 +147,52 @@ def auto_export(_):
 
     print("exported collection")
 
+class EXPORT_OT_auto_gltf(bpy.types.Operator):
+    bl_idname = "export_scene.auto_gltf"
+    bl_label = "Export Auto GLB"
+    bl_description = "Rebuild the export collection and export scene.glb"
 
-handlers = bpy.app.handlers.save_post
-for h in list(handlers):
-    if getattr(h, "__name__", "") == "auto_export":
-        handlers.remove(h)
+    def execute(self, context):
+        if not bpy.data.filepath:
+            self.report({'ERROR'}, "Save the .blend file before exporting")
+            return {'CANCELLED'}
 
-handlers.append(auto_export)
+        try:
+            auto_export()
+        except Exception as exc:
+            self.report({'ERROR'}, str(exc))
+            return {'CANCELLED'}
+
+        self.report({'INFO'}, "Exported scene.glb")
+        return {'FINISHED'}
+
+
+class VIEW3D_PT_auto_gltf_export(bpy.types.Panel):
+    bl_label = "Auto GLB Export"
+    bl_space_type = 'VIEW_3D'
+    bl_region_type = 'UI'
+    bl_category = "Tool"
+
+    def draw(self, context):
+        layout = self.layout
+        layout.operator(EXPORT_OT_auto_gltf.bl_idname, icon='EXPORT')
+
+
+CLASSES = (
+    EXPORT_OT_auto_gltf,
+    VIEW3D_PT_auto_gltf_export,
+)
+
+
+def register():
+    for cls in CLASSES:
+        bpy.utils.register_class(cls)
+
+
+def unregister():
+    for cls in reversed(CLASSES):
+        bpy.utils.unregister_class(cls)
+
+
+if __name__ == "__main__":
+    register()
