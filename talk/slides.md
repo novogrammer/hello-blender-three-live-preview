@@ -4,10 +4,10 @@ theme: default
 paginate: true
 ---
 
-# LLMに手伝ってもらって
-# Blender保存時glTF書き出しでライブプレビュー
+# LLMに手伝ってもらってBlender保存時glTF書き出しでライブプレビュー
 
 河本裕介
+@novogrammer
 
 ---
 
