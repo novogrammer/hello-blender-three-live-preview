@@ -11,7 +11,7 @@ Blender で作業中のモデルを GLB に書き出し、three.js + Vite で即
 
 ## 前提環境
 
-- Node.js 20 以上（Vite 8 系）
+- Node.js 22 以上（Vite 8 系）
 - Blender 4.x（Python スクリプト実行）
 
 ## セットアップ
