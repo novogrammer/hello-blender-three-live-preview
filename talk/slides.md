@@ -33,6 +33,10 @@ three.jsで使うプロジェクトでは、
 LLMに頼んでサクッと作れないかと考えました。
 
 ---
+## リポジトリ
+- GitHub: https://github.com/novogrammer/hello-blender-three-live-preview
+
+---
 
 ## 最初に考えた形
 
