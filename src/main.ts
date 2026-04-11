@@ -32,40 +32,75 @@ scene.add(directionalLight)
 
 const loader = new GLTFLoader()
 const clock = new THREE.Clock()
-let mixer: THREE.AnimationMixer | null = null
+const mixers: THREE.AnimationMixer[] = []
+const modelPaths = ['/models/suzanne.glb', '/models/torus.glb']
+let pendingModelCount = modelPaths.length
+let hasLoadedModel = false
 
-loader.load(
-  '/models/scene.glb',
-  (gltf) => {
-    const model = gltf.scene
-    scene.add(model)
+function layoutScene() {
+  const loadedModels = scene.children.filter((child) => child.userData.isLoadedModel)
 
-    if (gltf.animations.length > 0) {
-      mixer = new THREE.AnimationMixer(model)
-      const action = mixer.clipAction(gltf.animations[0])
-      action.play()
-    }
+  if (loadedModels.length === 0) {
+    return
+  }
 
-    const box = new THREE.Box3().setFromObject(model)
-    const size = box.getSize(new THREE.Vector3())
-    const center = box.getCenter(new THREE.Vector3())
+  const totalBox = new THREE.Box3()
 
+  for (const model of loadedModels) {
+    totalBox.expandByObject(model)
+  }
+
+  const size = totalBox.getSize(new THREE.Vector3())
+  const center = totalBox.getCenter(new THREE.Vector3())
+
+  for (const model of loadedModels) {
     model.position.sub(center)
+  }
 
-    const maxSize = Math.max(size.x, size.y, size.z)
-    const distance = Math.max(maxSize * 1.8, 2)
-    camera.position.set(distance * 0.6, distance * 0.45, distance)
-    camera.lookAt(0, 0, 0)
-  },
-  undefined,
-  (error) => {
-    console.error('Failed to load /models/scene.glb', error)
-  },
-)
+  const maxSize = Math.max(size.x, size.y, size.z)
+  const distance = Math.max(maxSize * 1.8, 2)
+  camera.position.set(distance * 0.6, distance * 0.45, distance)
+  camera.lookAt(0, 0, 0)
+}
+
+for (const path of modelPaths) {
+  loader.load(
+    path,
+    (gltf) => {
+      const model = gltf.scene
+      model.userData.isLoadedModel = true
+      scene.add(model)
+      hasLoadedModel = true
+
+      if (gltf.animations.length > 0) {
+        const mixer = new THREE.AnimationMixer(model)
+        const action = mixer.clipAction(gltf.animations[0])
+        action.play()
+        mixers.push(mixer)
+      }
+
+      pendingModelCount -= 1
+      if (pendingModelCount === 0) {
+        layoutScene()
+      }
+    },
+    undefined,
+    (error) => {
+      pendingModelCount -= 1
+      console.error(`Failed to load ${path}`, error)
+
+      if (pendingModelCount === 0 && hasLoadedModel) {
+        layoutScene()
+      }
+    },
+  )
+}
 
 function render() {
   const delta = clock.getDelta()
-  mixer?.update(delta)
+  for (const mixer of mixers) {
+    mixer.update(delta)
+  }
   renderer.render(scene, camera)
   requestAnimationFrame(render)
 }

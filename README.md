@@ -5,8 +5,8 @@ Blender で作業中のモデルを GLB に書き出し、three.js + Vite で即
 
 ## できること
 
-- Blender の `ExportTarget` コレクションを `scene.glb` として書き出す
-- three.js 側で `/models/scene.glb` を読み込み表示する
+- Blender の `ExportTarget` 配下の子コレクションを個別の `glb` として書き出す
+- three.js 側で `/models/suzanne.glb` と `/models/torus.glb` を読み込み表示する
 - Vite 開発サーバー上で更新をすぐ確認する
 
 ## 前提環境
@@ -35,20 +35,23 @@ npm run dev
 3. `Run Script` を実行する
 4. 3D View のサイドバー (`N`) の `Tool` タブにある `Auto GLB Export` パネルから `Export Auto GLB` を押す
 
-この操作で、`public/models/scene.glb` が更新されます。
+この操作で、`ExportTarget` 配下の各子コレクション名に対応する `public/models/*.glb` が更新されます。
 
 ## 重要な前提
 
 - `.blend` を一度保存してから実行してください（未保存だとエラーになります）
-- 書き出し対象は `ExportTarget` という名前のコレクションです
-- 出力先は固定で `public/models/scene.glb` です
+- 書き出し対象は `ExportTarget` 直下の子コレクションです
+- 子コレクション名がそのままファイル名になります（例: `suzanne` -> `public/models/suzanne.glb`）
+- 子コレクション名は小文字英数字とハイフンのみを使ってください
 
 ## トラブルシュート
 
 - `Collection "ExportTarget" was not found`  
   `ExportTarget` コレクション名を確認してください。
+- `Collection "..." must use lowercase letters, numbers, and hyphens only`  
+  `ExportTarget` 直下の子コレクション名を見直してください。
 - 画面にモデルが出ない  
-  ブラウザの開発者コンソールで `/models/scene.glb` 読み込みエラーを確認してください。
+  ブラウザの開発者コンソールで `/models/suzanne.glb` や `/models/torus.glb` の読み込みエラーを確認してください。
 
 ## 発表資料
 
